@@ -7,6 +7,7 @@ provider:
   runtime: go1.x
   stage: dev
   region: us-east-1
+  versionFunctions: false
 
   iam:
     role:
@@ -30,7 +31,7 @@ package:
     - ./bin/**
 
 functions:
-  hello:
+  get-user:
     handler: bin/user
     events:
       - httpApi:

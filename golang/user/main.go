@@ -1,45 +1,95 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-// Response is of type APIGatewayProxyResponse since we're leveraging the
-// AWS Lambda Proxy Request functionality (default behavior)
-//
-// https://serverless.com/framework/docs/providers/aws/events/apigateway/#lambda-proxy-integration
-type Response events.APIGatewayProxyResponse
+const notFoundResponse = "{\"error\": \"not found user\"}"
 
-// Handler is our lambda handler invoked by the `lambda.Start` function call
-func Handler(ctx context.Context) (Response, error) {
-	var buf bytes.Buffer
+type User struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	ID    string `json:"id"`
+}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"message": "Go Serverless v1.0! Your function executed successfully!",
-	})
+var sess = session.Must(session.NewSession())
+var db = dynamodb.New(sess)
+
+func LambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id, hasIdOnPath := request.PathParameters["id"]
+
+	fmt.Println("id ", id)
+
+	if !hasIdOnPath {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 404,
+			Body:       notFoundResponse,
+		}, nil
+	}
+
+	item, err := getUserById(id)
+
+	fmt.Println("err ", err)
+
+	if item == nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 404,
+			Body:       notFoundResponse,
+			Headers: map[string]string{
+				"Access-Control-Allow-Origin": "*",
+			},
+		}, nil
+	}
+
 	if err != nil {
-		return Response{StatusCode: 404}, err
+		return events.APIGatewayProxyResponse{}, err
 	}
-	json.HTMLEscape(&buf, body)
 
-	resp := Response{
-		StatusCode:      200,
-		IsBase64Encoded: false,
-		Body:            buf.String(),
+	itemJson, _ := json.Marshal(item)
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(itemJson),
 		Headers: map[string]string{
-			"Content-Type":           "application/json",
-			"X-MyCompany-Func-Reply": "hello-handler",
+			"Access-Control-Allow-Origin": "*",
 		},
+	}, nil
+}
+
+func getUserById(id string) (*User, error) {
+	itemDynamoDB, err := db.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String("User"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {
+				S: aws.String(id),
+			},
+		},
+	})
+
+	if itemDynamoDB.Item == nil {
+		return nil, errors.New("Could not find user: " + id)
 	}
 
-	return resp, nil
+	var item User
+	if err := dynamodbattribute.UnmarshalMap(itemDynamoDB.Item, &item); err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, err
 }
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(LambdaHandler)
 }
