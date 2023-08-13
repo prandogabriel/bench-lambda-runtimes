@@ -19,7 +19,7 @@ provider:
             - arn:aws:dynamodb:us-east-1:${aws:accountId}:table/User
 
 functions:
-  api:
+  get-user:
     handler: index.handler
     events:
       - httpApi:

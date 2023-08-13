@@ -4,11 +4,20 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+
+          Resource:
+            - arn:aws:dynamodb:us-east-1:${aws:accountId}:table/User
 
 functions:
-  hello:
-    handler: handler.hello
+  get-user:
+    handler: handler.lambda_handler
     events:
       - httpApi:
-          path: /
+          path: /users/{id}
           method: get
