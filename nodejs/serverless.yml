@@ -4,11 +4,27 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  stage: dev
+  region: us-east-1
+  versionFunctions: false
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+
+          Resource:
+            - arn:aws:dynamodb:us-east-1:${aws:accountId}:table/User
 
 functions:
   api:
     handler: index.handler
     events:
       - httpApi:
-          path: /
+          path: /users/{id}
           method: get
+
+plugins: 
+  - serverless-offline
