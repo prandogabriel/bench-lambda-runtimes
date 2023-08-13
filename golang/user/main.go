@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -27,8 +26,6 @@ var db = dynamodb.New(sess)
 func LambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	id, hasIdOnPath := request.PathParameters["id"]
 
-	fmt.Println("id ", id)
-
 	if !hasIdOnPath {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 404,
@@ -37,8 +34,6 @@ func LambdaHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	}
 
 	item, err := getUserById(id)
-
-	fmt.Println("err ", err)
 
 	if item == nil {
 		return events.APIGatewayProxyResponse{

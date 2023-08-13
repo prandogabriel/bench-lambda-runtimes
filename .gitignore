@@ -1,0 +1,52 @@
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Serverless directories
+.serverless
+
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+
+# Serverless directories
+.serverless
+
+# golang output binary directory
+bin
+
+# golang vendor (dependencies) directory
+vendor
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+.env
