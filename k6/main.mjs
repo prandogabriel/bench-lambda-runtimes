@@ -1,5 +1,6 @@
 import LambdaGolang from "./scenarios/golang.mjs";
 import LambdaNodejs from "./scenarios/nodejs.mjs";
+import LambdaPython from "./scenarios/python.mjs";
 import { group } from "k6";
 import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
 
@@ -29,5 +30,9 @@ export default () => {
 
   group("Lambda Nodejs", () => {
     LambdaNodejs();
+  });
+
+  group("Lambda Python", () => {
+    LambdaPython();
   });
 };
